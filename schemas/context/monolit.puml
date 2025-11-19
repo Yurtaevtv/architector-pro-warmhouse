@@ -6,12 +6,12 @@ top to bottom direction
 
 !includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
 
-Person(user, "Пользователь", "Пользователь умного дома")
-System(SmartHome, "Умный дом", "Система управления умным домом")
-System_Ext(sensors, "Датчик", "Датчик тепла")
+Person(user, "User", "Smarthome user")
+System(SmartHome, "Smart home", "Smart home system control")
+System_Ext(sensors, "Sensors", "Warm sensord")
 
 
-Rel(sensors, SmartHome, "Передает данные температуры")
-Rel(SmartHome, user, "Использует умный дом")
+Rel(SmartHome, sensors,  "Request temperature metrics")
+Rel(user, SmartHome,  "Uses smart home. ")
 
 @enduml
