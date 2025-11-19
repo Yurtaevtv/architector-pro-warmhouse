@@ -1,6 +1,6 @@
 @startuml
 
-title SmartHome monolit Context Diagram
+title Диаграмма контекста монолитного решения
 
 top to bottom direction
 
@@ -8,10 +8,8 @@ top to bottom direction
 
 Person(user, "Пользователь", "Пользователь умного дома")
 System(SmartHome, "Умный дом", "Система управления умным домом")
-System_Ext(sensors, "Датчик", "Датчик тепла")
 
 
-Rel(sensors, SmartHome, "Передает данные температуры")
 Rel(SmartHome, user, "Использует умный дом")
 
 @enduml
