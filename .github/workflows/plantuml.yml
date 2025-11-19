@@ -23,7 +23,7 @@ jobs:
         distribution: 'temurin'
         
     - name: Install Graphviz
-      run: sudo brew install graphviz
+      run: sudo apt-get -y install graphviz
 
     - name: Install PlantUML
       run: sudo apt-get install plantuml
