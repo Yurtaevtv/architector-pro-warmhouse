@@ -7,11 +7,13 @@ top to bottom direction
 !includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
 
 Person(user, "User", "Smarthome user")
+Person(support, "Support", "Support users")
 System(SmartHome, "Smart home", "Smart home system control")
 System_Ext(sensors, "Sensors", "Warm sensord")
 
 
 Rel(SmartHome, sensors,  "Request temperature metrics")
 Rel(user, SmartHome,  "Uses smart home. ")
+Rel(support, SmartHome,  "Creates/Removes/Updates sensors")
 
 @enduml
