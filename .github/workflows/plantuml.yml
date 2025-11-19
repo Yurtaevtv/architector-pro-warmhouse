@@ -32,9 +32,6 @@ jobs:
     - name: Generate Diagrams
       run: |
         plantuml "./schemas/context/*.puml"
-        plantuml schemas/container/*.puml
-        plantuml schemas/component/*.puml
-        plantuml schemas/code/*.puml
 
     - name: Commit Diagrams
       run: |
