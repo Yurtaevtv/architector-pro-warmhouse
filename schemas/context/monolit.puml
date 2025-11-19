@@ -2,11 +2,16 @@
 
 title Диаграмма контекста монолитного решения
 
-actor client
-node app
-database db
-db -> app
-app -> client
+top to bottom direction
 
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
+
+Person(user, "Пользователь", "Пользователь умного дома")
+System(SmartHome, "Умный дом", "Система управления умным домом")
+System_Ext(sensors, "Датчик", "Датчик тепла")
+
+
+Rel(sensors, SmartHome, "Передает данные температуры")
+Rel(SmartHome, user, "Использует умный дом")
 
 @enduml
