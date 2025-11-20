@@ -1,0 +1,33 @@
+@startuml
+title FitLife Membership Management Code Diagram
+
+top to bottom direction
+
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
+
+class Device {
+  -id: guid
+  -name: name
+  -type: DeviceType
+  -metrics: List<DeviceType>
+  -actions: List<string>
+}
+
+class DeviceType {
+  -name: string
+}
+
+class MetricType {
+  -name: string
+  -type: ItemType
+}
+
+class ItemType{
+  -name: string
+}
+
+Device "1" -- "1..*"  MetricType : has
+Device "1" -- "1"  DeviceType : include
+MetricType "1" -- "1..*"  ItemType : include
+
+@enduml

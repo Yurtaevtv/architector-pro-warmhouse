@@ -1,0 +1,18 @@
+@startuml
+
+title Диаграмма контекста микросервисного решения
+
+top to bottom direction
+
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
+
+Person(User, "User", "Smarthome user")
+System(SmartHome, "Smart home", "Smart home system control")
+System_Ext(Device, "Device", "Some sensord")
+
+
+Rel(user, SmartHome,  "Uses smart home")
+Rel(SmartHome, Device,  "Use device", "Do action / Request metrics")
+
+
+@enduml

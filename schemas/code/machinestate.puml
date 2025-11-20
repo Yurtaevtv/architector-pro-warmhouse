@@ -1,0 +1,35 @@
+@startuml
+
+class Program {
+   - id: int
+   - active: boolean
+   - initState: State 
+}
+
+class State {
+  - id: int
+  - nextStates: KeyValuePair<Condition, State>
+  - stateContext: object
+}
+
+class Condition{
+  - metric: MetricType
+  - value: object
+}
+
+class StateMachine{
+  - device: Device
+  - currentState: State
+  + Init(Program program)
+  + List<Metrics> Check(Device device)
+  + void Next(State state)
+  + void Idle()
+}
+
+
+StateMachine --> State
+State o-- Condition
+Program *-- State
+
+
+@enduml
