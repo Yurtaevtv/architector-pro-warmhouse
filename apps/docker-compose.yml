@@ -1,21 +1,20 @@
 services:
   # База данных
-  postgres:
-    image: postgres:16-alpine
+  postgres_db:
+    image: postgres:18-alpine
     container_name: smart-home-postgres
     environment:
-      POSTGRES_MULTIPLE_DATABASES: device, scenario
-      POSTGRES_USER: smarthome_user
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: device
     ports:
-      - "5432:5432"
+      - "7432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./database/init:/docker-entrypoint-initdb.d
+      - ./database/init/init-device.sql:/docker-entrypoint-initdb.d/init-device.sql
     networks:
       - smarthome-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U smarthome_user -d smarthome"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d device"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -49,6 +48,8 @@ services:
       context: ${FRONTEND_CONTEXT}
       dockerfile: Dockerfile
     container_name: smart-home-frontend
+    environment:
+      - ASPNETCORE_ENVIRONMENT=${ENVIRONMENT}
     ports:
       - "3000:80"
     networks:
@@ -61,26 +62,15 @@ services:
       dockerfile: Dockerfile
     container_name: smart-home-api-gateway
     environment:
-      - ASPNETCORE_ENVIRONMENT=Production
-      - ConnectionStrings__PostgreSQL=Host=postgres;Database=smarthome;Username=smarthome_user;Password=${POSTGRES_PASSWORD:-Smarthome123!}
+      - ASPNETCORE_ENVIRONMENT=${ENVIRONMENT}
       - Kafka__BootstrapServers=kafka:9092
-      - Redis__ConnectionString=redis:6379
-      - JWT__Secret=${JWT_SECRET:-YourSuperSecretKeyForJWTTokens123!}
     ports:
       - "7000:80"
-      - "7001:443"
     depends_on:
-      postgres:
-        condition: service_healthy
       kafka:
         condition: service_healthy
     networks:
       - smarthome-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:80/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
 
   # Device Service
   device-service:
@@ -89,17 +79,16 @@ services:
       dockerfile: Dockerfile
     container_name: smart-home-device-service
     environment:
-      - ASPNETCORE_ENVIRONMENT=Production
-      - ConnectionStrings__PostgreSQL=Host=postgres;Database=smarthome;Username=smarthome_user;Password=${POSTGRES_PASSWORD:-Smarthome123!}
-      - Kafka__BootstrapServers=kafka:9092
-      - Redis__ConnectionString=redis:6379
+      - ASPNETCORE_ENVIRONMENT=${ENVIRONMENT}
+      - ASPNETCORE_HTTP_PORTS=${PORT}
+      - ConnectionStrings__Device=${ConnectionStringDevice}
     ports:
-      - "7005:80"
+      - "7001:5000"
     depends_on:
-      postgres:
+      postgres_db:
         condition: service_healthy
-      kafka:
-        condition: service_healthy
+      # kafka:
+      #   condition: service_healthy
     networks:
       - smarthome-network
     healthcheck:
@@ -115,13 +104,13 @@ services:
       dockerfile: Dockerfile
     container_name: smart-home-scenario-service
     environment:
-      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_ENVIRONMENT=${ENVIRONMENT}
       - ConnectionStrings__PostgreSQL=Host=postgres;Database=smarthome;Username=smarthome_user;Password=${POSTGRES_PASSWORD:-Smarthome123!}
       - Kafka__BootstrapServers=kafka:9092
     ports:
-      - "7004:80"
+      - "7002:80"
     depends_on:
-      postgres:
+      postgres_db:
         condition: service_healthy
       kafka:
         condition: service_healthy
@@ -140,15 +129,12 @@ services:
       dockerfile: Dockerfile
     container_name: smart-home-websocket-service
     environment:
-      - ASPNETCORE_ENVIRONMENT=Production
-      - ConnectionStrings__PostgreSQL=Host=postgres;Database=smarthome;Username=smarthome_user;Password=${POSTGRES_PASSWORD:-Smarthome123!}
+      - ASPNETCORE_ENVIRONMENT=${ENVIRONMENT}
       - Kafka__BootstrapServers=kafka:9092
       - Redis__ConnectionString=redis:6379
     ports:
-      - "7002:80"
+      - "7003:80"
     depends_on:
-      postgres:
-        condition: service_healthy
       kafka:
         condition: service_healthy
     networks:
@@ -166,16 +152,11 @@ services:
       dockerfile: Dockerfile
     container_name: smart-home-integration-service
     environment:
-      - ASPNETCORE_ENVIRONMENT=Production
-      - ConnectionStrings__PostgreSQL=Host=postgres;Database=smarthome;Username=smarthome_user;Password=${POSTGRES_PASSWORD:-Smarthome123!}
+      - ASPNETCORE_ENVIRONMENT=${ENVIRONMENT}
       - Kafka__BootstrapServers=kafka:9092
-      - MQTT__BrokerUrl=mqtt://mosquitto:1883
-      - Zigbee__CoordinatorPath=/dev/ttyUSB0
     ports:
-      - "7003:80"
+      - "7004:80"
     depends_on:
-      postgres:
-        condition: service_healthy
       kafka:
         condition: service_healthy
     networks:
