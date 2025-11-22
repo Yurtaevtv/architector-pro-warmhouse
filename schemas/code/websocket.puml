@@ -1,0 +1,89 @@
+@startuml
+title Диаграмма кода WebSocket Service
+
+package "WebSocket.Core" {
+  interface IWebSocketConnection {
+    + string ConnectionId { get; }
+    + WebSocket Socket { get; }
+    + bool IsConnected { get; }
+    + SendAsync(string message): Task
+    + CloseAsync(): Task
+  }
+
+  class WebSocketConnection {
+    + string ConnectionId { get; }
+    + WebSocket Socket { get; }
+    + bool IsConnected { get; }
+    + SendAsync(string message): Task
+    + CloseAsync(): Task
+    - ReceiveLoop(): Task
+  }
+
+  interface IConnectionManager {
+    + AddConnection(WebSocket socket): string
+    + RemoveConnection(string connectionId): bool
+    + GetConnection(string connectionId): IWebSocketConnection
+    + GetAllConnections(): List<IWebSocketConnection>
+  }
+
+  class ConnectionManager {
+    - ConcurrentDictionary<string, IWebSocketConnection> _connections
+    + AddConnection(WebSocket socket): string
+    + RemoveConnection(string connectionId): bool
+    + GetConnection(string connectionId): IWebSocketConnection
+    + GetAllConnections(): List<IWebSocketConnection>
+    - CleanupDeadConnections(): Task
+  }
+}
+
+package "WebSocket.Handlers" {
+  class WebSocketHandler {
+    - IConnectionManager _connectionManager
+    - ILogger<WebSocketHandler> _logger
+    + HandleConnection(HttpContext context): Task
+    + Broadcast(object message): Task
+    - ProcessMessage(string connectionId, string message): Task
+  }
+
+  class WebSocketMessage {
+    + string Type { get; set; }
+    + object Data { get; set; }
+    + DateTime Timestamp { get; set; }
+    + string Version { get; set; }
+  }
+}
+
+package "WebSocket.EventHandlers" {
+  class DeviceEventWebSocketHandler {
+    - IConnectionManager _connectionManager
+    + HandleDeviceStateChanged(DeviceStateChangedEvent @event): Task
+    + HandleDeviceConnected(DeviceConnectedEvent @event): Task
+  }
+
+  class ScenarioEventWebSocketHandler {
+    - IConnectionManager _connectionManager
+    + HandleScenarioTriggered(ScenarioTriggeredEvent @event): Task
+  }
+
+  class TelemetryEventWebSocketHandler {
+    - IConnectionManager _connectionManager
+    + HandleTelemetryTriggered(TelemeryTriggeredEvent @event): Task
+  }
+}
+
+WebSocketConnection ..|> IWebSocketConnection
+ConnectionManager ..|> IConnectionManager
+ConnectionManager --> IWebSocketConnection
+
+WebSocketHandler --> IConnectionManager
+
+DeviceEventWebSocketHandler --> IConnectionManager
+ScenarioEventWebSocketHandler --> IConnectionManager
+TelemetryEventWebSocketHandler --> IConnectionManager
+
+WebSocketHandler ..> WebSocketMessage
+DeviceEventWebSocketHandler ..> DeviceStateChangedEvent
+ScenarioEventWebSocketHandler ..> ScenarioTriggeredEvent
+TelemetryEventWebSocketHandler ..> TelemetryTriggeredEvent
+
+@enduml

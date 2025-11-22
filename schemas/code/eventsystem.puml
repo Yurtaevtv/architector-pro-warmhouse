@@ -1,0 +1,86 @@
+@startuml
+title Диаграмма кода Event System
+
+package "Events" {
+  abstract class DomainEvent {
+    + string EventId { get; }
+    + DateTime OccurredOn { get; }
+    + string EventType { get; }
+    + string Source { get; }
+  }
+
+  class DeviceStateChangedEvent {
+    + string DeviceId { get; }
+    + string Property { get; }
+    + object Value { get; }
+  }
+
+  class DeviceConnectedEvent {
+    + string DeviceId { get; }
+    + string DeviceType { get; }
+  }
+
+  class ScenarioTriggeredEvent {
+    + string ScenarioId { get; }
+    + string TriggerType { get; }
+    + string TriggerSource { get; }
+    + Dictionary<string, object> TriggerData { get; }
+  }
+
+}
+
+package "EventBus" {
+  interface IEventBus {
+    + PublishAsync<TEvent>(TEvent @event): Task
+    + SubscribeAsync<TEvent>(string subscriptionId, Func<TEvent, Task> handler): Task
+    + UnsubscribeAsync<TEvent>(string subscriptionId): Task
+  }
+
+  class KafkaEventBus {
+    - IProducer<string, byte[]> _producer
+    - IConsumer<string, byte[]> _consumer
+    - Dictionary<string, List<string>> _subscriptions
+    + PublishAsync<TEvent>(TEvent @event): Task
+    + SubscribeAsync<TEvent>(string subscriptionId, Func<TEvent, Task> handler): Task
+    + UnsubscribeAsync<TEvent>(string subscriptionId): Task
+    - SerializeEvent<TEvent>(TEvent @event): byte[]
+    - DeserializeEvent<TEvent>(byte[] data): TEvent
+  }
+
+  class EventBusRegistry {
+    - Dictionary<Type, string> _topicMappings
+    + GetTopicForEvent<TEvent>(): string
+    + RegisterEvent<TEvent>(string topic): void
+  }
+}
+
+package "EventHandlers" {
+  class DeviceEventHandler {
+    - IWebSocketService _webSocketService
+    - INotificationService _notificationService
+    + HandleDeviceStateChanged(DeviceStateChangedEvent @event): Task
+    + HandleDeviceConnected(DeviceConnectedEvent @event): Task
+  }
+
+  class ScenarioEventHandler {
+    - IScenarioEngine _scenarioEngine
+    + HandleDeviceStateChanged(DeviceStateChangedEvent @event): Task
+  }
+}
+
+' Relationships
+DeviceStateChangedEvent --|> DomainEvent
+DeviceConnectedEvent --|> DomainEvent
+ScenarioTriggeredEvent --|> DomainEvent
+
+KafkaEventBus ..|> IEventBus
+KafkaEventBus --> EventBusRegistry
+
+DeviceEventHandler --> IWebSocketService
+DeviceEventHandler --> INotificationService
+ScenarioEventHandler --> IScenarioEngine
+
+DeviceEventHandler ..> DeviceStateChangedEvent
+ScenarioEventHandler ..> DeviceStateChangedEvent
+
+@enduml

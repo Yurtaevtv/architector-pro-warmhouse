@@ -1,0 +1,86 @@
+@startuml
+title Диаграмма кода Device Service
+
+package "Device.Service" {
+  interface IDeviceRepository {
+    + GetByIdAsync(string deviceId): Task<Device>
+    + AddAsync(Device device): Task
+    + UpdateAsync(Device device): Task
+    + DeleteAsync(string deviceId): Task
+  }
+
+  class DeviceRepository {
+    - DbContext _context
+    + GetByIdAsync(string deviceId): Task<Device>
+    + GetByHomeAsync(string homeId): Task<List<Device>>
+    + AddAsync(Device device): Task
+    + UpdateAsync(Device device): Task
+    + DeleteAsync(string deviceId): Task
+  }
+
+  interface IDeviceManager {
+    + CreateDeviceAsync(DeviceCreateRequest request): Task<Device>
+    + UpdateDeviceStatusAsync(string deviceId, string status): Task
+    + DeleteDeviceAsync(string deviceId): Task
+  }
+
+  class DeviceManager {
+    - IDeviceRepository _deviceRepository
+    - IEventBus _eventBus
+    + CreateDeviceAsync(DeviceCreateRequest request): Task<Device>
+    + UpdateDeviceStatusAsync(string deviceId, string status): Task
+    + DeleteDeviceAsync(string deviceId): Task
+    - ValidateDevice(Device device): void
+  }
+
+  class DeviceController {
+    - IDeviceManager _deviceManager
+    + GetDevice(string deviceId): Task<IActionResult>
+    + CreateDevice(DeviceCreateRequest request): Task<IActionResult>
+    + UpdateDeviceStatus(string deviceId, DeviceStatusRequest request): Task<IActionResult>
+    + DeleteDevice(string deviceId): Task<IActionResult>
+  }
+
+  class Device {
+    + string DeviceId { get; }
+    + string DeviceType { get; }
+    + string Status { get; set; }
+    + DateTime CreatedAt { get; }
+    + DateTime UpdatedAt { get; set; }
+    + UpdateStatus(string newStatus): void
+    + IsOnline(): bool
+  }
+
+  class DeviceEventPublisher {
+    - IEventBus _eventBus
+    + PublishDeviceCreated(Device device): Task
+    + PublishDeviceStatusChanged(Device device, string oldStatus): Task
+    + PublishDeviceDeleted(string deviceId, string homeId): Task
+  }
+}
+
+package "Device.Models" {
+  class DeviceCreateRequest {
+    + string HomeId { get; set; }
+    + string DeviceType { get; set; }
+    + string Name { get; set; }
+    + Dictionary<string, object> Metadata { get; set; }
+  }
+
+  class DeviceStatusResponse {
+    + string Status { get; set; }
+    + Dictionary<string, object> Parameters { get; set; }
+  }
+}
+
+' Relationships
+DeviceRepository ..|> IDeviceRepository
+DeviceManager ..|> IDeviceManager
+DeviceManager --> IDeviceRepository
+DeviceManager --> DeviceEventPublisher
+DeviceController --> IDeviceManager
+DeviceRepository --> Device
+DeviceEventPublisher --> IEventBus
+
+
+@enduml

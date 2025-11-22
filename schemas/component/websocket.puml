@@ -1,0 +1,31 @@
+@startuml
+title Диаграмма компонентов WebSocket Service
+
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
+
+Container(websocket_service, "WebSocket Service", ".NET 8", "Real-time уведомления")
+
+Container_Boundary(websocket_service, "WebSocket Service") {
+    Component(websocket_handler, "WebSocketHandler", "Middleware", "Обработка WebSocket соединений")
+    
+    Component(device_event_consumer, "DeviceEventConsumer", "Background Service", "Потребление событий устройств")
+    Component(scenario_event_consumer, "ScenarioEventConsumer", "Background Service", "Потребление событий сценариев")
+    Component(telemetry_event_consumer, "TelemetryEventConsumer", "Background Service", "Потребление данных телеметрии")
+}
+
+Container(api_gateway, "API Gateway", ".NET 8")
+Container(message_bus, "Message Bus", "Kafka")
+Container(spa, "Web Application", "Vue.js/React")
+
+Rel(device_event_consumer, websocket_handler, "Передаем данные устройств")
+Rel(scenario_event_consumer, websocket_handler, "Передаем ход выполнения сценария")
+Rel(telemetry_event_consumer, websocket_handler, "Передаем данные телеметрии")
+
+Rel(api_gateway, websocket_handler, "WebSocket upgrade", "WebSocket")
+Rel(websocket_handler, spa, "Push уведомления", "WebSocket")
+
+Rel(message_bus, device_event_consumer, "События устройств", "Kafka Consumer")
+Rel(message_bus, scenario_event_consumer, "События сценариев", "Kafka Consumer")
+Rel(message_bus, telemetry_event_consumer, "Телеметрия", "Kafka Consumer")
+
+@enduml

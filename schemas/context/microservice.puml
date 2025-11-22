@@ -1,18 +1,24 @@
 @startuml
+title Диаграмма контекста Smart Home SaaS платформы
 
-title Диаграмма контекста микросервисного решения
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Context.puml
 
-top to bottom direction
+Person(user, "Пользователь умного дома", "Пользователь системйо умного дома")
 
-!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
+System(smart_home_saas, "Smart Home", "Умный дом")
+System_Ext(device, "Partner device", "Zigbee/Wi-Fi/MQTT устройство")
 
-Person(User, "User", "Smarthome user")
-System(SmartHome, "Smart home", "Smart home system control")
-System_Ext(Device, "Device", "Some sensord")
+System_Ext(user_browser, "Веб-браузер", "Google Chrome, Firefox, Safari")
+System_Ext(mobile_app, "Мобильное приложение", "iOS/Android приложение")
 
+System_Ext(user_browser, "Веб-браузер", "Google Chrome, Firefox, Safari")
 
-Rel(user, SmartHome,  "Uses smart home")
-Rel(SmartHome, Device,  "Use device", "Do action / Request metrics")
+Rel(user, user_browser, "Управляет устройствами, настраивает сценарии")
+Rel(user, mobile_app, "Управляет домом удаленно")
 
+Rel(user_browser, smart_home_saas, "HTTPS запросы")
+Rel(mobile_app, smart_home_saas, "API вызовы")
+Rel(device, smart_home_saas, "Команда устройству")
+Rel(smart_home_saas, device, "Данные устройства")
 
 @enduml

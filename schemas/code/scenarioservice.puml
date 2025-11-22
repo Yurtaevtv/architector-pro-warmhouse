@@ -1,0 +1,126 @@
+@startuml
+title Диаграмма кода Scenario Service
+
+package "Scenario.Models" {
+  class Scenario {
+    + string ScenarioId { get; }
+    + string Name { get; }
+    + string Description { get; }
+    + bool IsActive { get; set; }
+    + Trigger Trigger { get; }
+    + List<Action> Actions { get; }
+    + DateTime CreatedAt { get; }
+    + DateTime UpdatedAt { get; }
+    + CanExecute(): bool
+    + ExecuteAsync(): Task
+  }
+
+  abstract class Trigger {
+    + string Type { get; }
+    + string Source { get; }
+    + Dictionary<string, object> Conditions { get; }
+    + abstract bool IsSatisfied(object eventData): bool
+  }
+
+  class DeviceStateTrigger {
+    + string DeviceId { get; }
+    + string Property { get; }
+    + object ExpectedValue { get; }
+    + bool IsSatisfied(object eventData): bool
+  }
+
+  class TimeTrigger {
+    + string CronExpression { get; }
+    + TimeSpan? Time { get; }
+    + bool IsSatisfied(object eventData): bool
+  }
+
+  abstract class Action {
+    + string Type { get; }
+    + string Target { get; }
+    + Dictionary<string, object> Parameters { get; }
+    + abstract Task ExecuteAsync(): Task
+  }
+
+  class DeviceCommandAction {
+    + string DeviceId { get; }
+    + string Command { get; }
+    + Dictionary<string, object> Parameters { get; }
+    + ExecuteAsync(): Task
+  }
+
+  class NotificationAction {
+    + string Message { get; }
+    + string Level { get; }
+    + ExecuteAsync(): Task
+  }
+}
+
+package "Scenario.Engine" {
+  interface IScenarioEngine {
+    + ExecuteScenarioAsync(string scenarioId, string triggerSource): Task
+    + EvaluateTriggersAsync(string homeId, DomainEvent @event): Task
+    + ScheduleScenarioAsync(string scenarioId, DateTime executeAt): Task
+  }
+
+  class ScenarioEngine {
+    - IScenarioRepository _scenarioRepository
+    - IEventBus _eventBus
+    - ILogger<ScenarioEngine> _logger
+    + ExecuteScenarioAsync(string scenarioId, string triggerSource): Task
+    + EvaluateTriggersAsync(string homeId, DomainEvent @event): Task
+    + ScheduleScenarioAsync(string scenarioId, DateTime executeAt): Task
+    - ExecuteActionsAsync(List<Action> actions): Task
+  }
+
+  interface ITriggerEvaluator {
+    + EvaluateAsync(Trigger trigger, DomainEvent @event): Task<bool>
+  }
+
+  class TriggerEvaluator {
+    + EvaluateAsync(Trigger trigger, DomainEvent @event): Task<bool>
+    - EvaluateDeviceStateTrigger(DeviceStateTrigger trigger, DeviceStateChangedEvent @event): bool
+    - EvaluateTimeTrigger(TimeTrigger trigger, object eventData): bool
+  }
+}
+
+package "Scenario.Repository" {
+  interface IScenarioRepository {
+    + GetByIdAsync(string scenarioId): Task<Scenario>
+    + GetActiveScenariosAsync(): Task<List<Scenario>>
+    + AddAsync(Scenario scenario): Task
+    + UpdateAsync(Scenario scenario): Task
+    + DeleteAsync(string scenarioId): Task
+  }
+
+  class ScenarioRepository {
+    - DbContext _context
+    + GetByIdAsync(string scenarioId): Task<Scenario>
+    + GetActiveScenariosAsync(): Task<List<Scenario>>
+    + AddAsync(Scenario scenario): Task
+    + UpdateAsync(Scenario scenario): Task
+    + DeleteAsync(string scenarioId): Task
+  }
+}
+
+' Relationships
+DeviceStateTrigger --|> Trigger
+TimeTrigger --|> Trigger
+DeviceCommandAction --|> Action
+NotificationAction --|> Action
+
+Scenario --> Trigger
+Scenario --> Action
+
+ScenarioEngine ..|> IScenarioEngine
+TriggerEvaluator ..|> ITriggerEvaluator
+ScenarioRepository ..|> IScenarioRepository
+
+ScenarioEngine --> IScenarioRepository
+ScenarioEngine --> ITriggerEvaluator
+ScenarioEngine --> IEventBus
+
+TriggerEvaluator ..> DeviceStateTrigger
+TriggerEvaluator ..> TimeTrigger
+
+@enduml

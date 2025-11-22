@@ -6,13 +6,13 @@ top to bottom direction
 
 !includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
 
-Person(user, "User", "Smarthome user")
+Person(User, "User", "Smarthome user")
 System(SmartHome, "Smart home", "Golang", "Smart home system control")
 System_Ext(sensors, "Sensors", "Warm sensor")
 
 
 Rel(SmartHome, sensors,  "Temperature metrics")
-Rel(user, SmartHome,  "Uses smart home. ")
+Rel(User, SmartHome,  "Uses smart home. ")
 
 
 @enduml

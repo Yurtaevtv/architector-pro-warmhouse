@@ -1,0 +1,53 @@
+@startuml
+title Диаграмма компонентов Scenario Service
+
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
+
+Container(scenario_service, "Scenario Service", ".NET 8", "Управление сценариями и автоматизацией")
+
+Container_Boundary(scenario_service, "Scenario Service") {
+    Component(scenario_controller, "ScenarioController", "ASP.NET Core", "REST API для управления сценариями")
+    
+    Component(scenario_engine, "ScenarioEngine", "Domain Service", "Исполнение сценариев")
+    Component(trigger_evaluator, "TriggerEvaluator", "Domain Service", "Оценка условий триггеров")
+    Component(scenario_scheduler, "ScenarioScheduler", "Background Service", "Планировщик временных сценариев")
+    
+    Component(scenario_repository, "ScenarioRepository", "Repository", "Доступ к данным сценариев")
+    Component(trigger_repository, "TriggerRepository", "Repository", "Доступ к данным триггеров")
+    Component(action_repository, "ActionRepository", "Repository", "Доступ к данным действий")
+    
+    Component(scenario_event_publisher, "ScenarioEventPublisher", "Integration Events", "Публикация событий сценариев")
+    Component(device_event_consumer, "DeviceEventConsumer", "Background Service", "Потребление событий устройств")
+    Component(command_event_publisher, "CommandEventPublisher", "Integration Events", "Публикация команд устройствам")
+}
+
+ContainerDb(scenario_db, "Scenario Database", "PostgreSQL")
+Container(message_bus, "Message Bus", "Kafka")
+Container(api_gateway, "API Gateway", ".NET 8")
+
+Rel(scenario_controller, scenario_engine, "Управление сценариями")
+
+Rel(scenario_engine, scenario_repository, "Чтение/запись сценариев")
+Rel(trigger_evaluator, trigger_repository, "Чтение/запись триггеров")
+Rel(scenario_engine, action_repository, "Чтение действий")
+
+
+Rel(scenario_scheduler, scenario_repository, "Получение запланированных сценариев")
+Rel(scenario_scheduler, trigger_evaluator, "Получение запланированных сценариев")
+
+Rel(scenario_engine, scenario_event_publisher, "Публикация ScenarioTriggered")
+Rel(trigger_evaluator, command_event_publisher, "Публикация команд при срабатывании")
+Rel(scenario_engine, command_event_publisher, "Публикация команд из действий")
+
+Rel(device_event_consumer, trigger_evaluator, "Проверка триггеров по событиям")
+
+Rel(api_gateway, scenario_controller, "API запросы", "Https")
+
+Rel(scenario_repository, scenario_db, "Доступ к данным", "Entity Framework")
+Rel(trigger_repository, scenario_db, "Доступ к данным", "Entity Framework")
+
+Rel(scenario_event_publisher, message_bus, "Публикация событий", "Kafka Producer")
+Rel(command_event_publisher, message_bus, "Публикация команд", "Kafka Producer")
+Rel(message_bus, device_event_consumer, "Получение событий устройств", "Kafka Consumer")
+
+@enduml

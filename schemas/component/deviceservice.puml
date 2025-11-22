@@ -1,0 +1,50 @@
+@startuml
+title Диаграмма компонентов Device Service
+
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
+
+Container(device_service, "Device Service", ".NET 8", "Управление устройствами и телеметрией")
+
+Container_Boundary(device_service, "Device Service") {
+    Component(device_controller, "DeviceController", "ASP.NET Core", "REST API для управления устройствами")
+    Component(telemetry_controller, "TelemetryController", "ASP.NET Core", "API для работы с телеметрией")
+    
+    Component(device_manager, "DeviceManager", "Domain Service", "Бизнес-логика управления устройствами")
+    Component(telemetry_processor, "TelemetryProcessor", "Domain Service", "Обработка входящей телеметрии")
+    
+    Component(device_repository, "DeviceRepository", "Repository", "Доступ к данным устройств")
+    Component(telemetry_repository, "TelemetryRepository", "Repository", "Доступ к данным телеметрии")
+    
+    Component(device_event_publisher, "DeviceEventPublisher", "Integration Events", "Публикация событий устройств")
+    Component(command_event_consumer, "CommandEventConsumer", "Background Service", "Потребление команд из Message Bus")
+    Component(telemetry_event_consumer, "TelemetryEventConsumer", "Background Service", "Потребление телеметрии из Message Bus")
+}
+
+ContainerDb(main_db, "Device database", "PostgreSQL")
+Container(message_bus, "Message Bus", "Kafka")
+Container(api_gateway, "API Gateway", ".NET 8")
+
+' Internal connections
+Rel(device_controller, device_manager, "Вызовы бизнес-логики")
+Rel(telemetry_controller, telemetry_processor, "Обработка телеметрии")
+
+Rel(device_manager, device_repository, "CRUD операции")
+Rel(telemetry_processor, telemetry_repository, "Запись телеметрии")
+
+Rel(device_manager, device_event_publisher, "Публикация DeviceStateChanged")
+
+Rel(command_event_consumer, device_manager, "Обработка команд устройствам")
+Rel(telemetry_event_consumer, telemetry_processor, "Обработка данных телеметрии")
+
+' External connections
+Rel(api_gateway, device_controller, "API запросы", "HTTPS")
+Rel(api_gateway, telemetry_controller, "API запросы", "HTTPS")
+
+Rel(device_repository, main_db, "Доступ к данным", "Entity Framework")
+Rel(telemetry_repository, main_db, "Доступ к данным", "Entity Framework")
+
+Rel(device_event_publisher, message_bus, "Публикация событий")
+Rel(message_bus, command_event_consumer, "Получение команд")
+Rel(message_bus, telemetry_event_consumer, "Получение телметрии")
+
+@enduml

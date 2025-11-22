@@ -1,0 +1,49 @@
+@startuml
+title Диаграмма контейнеров Smart Home SaaS платформы
+
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Container.puml
+
+Person(user, "Пользователь", "Владелец умного дома")
+
+System_Boundary(smart_home, "Smart Home SaaS Платформа") {
+    Container(spa, "Web Application", "Vue.js/React", "Single Page Application")
+    Container(api_gateway, "API Gateway", ".NET 8/YARP", "Единая точка входа, маршрутизация")
+    
+    Container(webSocket_service, "WebSocket Service", ".NET 8", "Чтение уведомлений от устройсв, сценариев")
+    Container(device_service, "Device Service", ".NET 8", "Управление устройствами, телеметрия")
+    Container(scenario_service, "Scenario Service", ".NET 8", "Сценарии и автоматизация") 
+    Container(integration_service, "Integration Service", ".NET 8", "Интеграция с устройствами партнеров")
+    
+    ContainerDb(device_db, "Device database", "PostgreSQL", "База данных устройств")
+    ContainerDb(scenario_db, "Scenario database", "PostgreSQL", "База данных сценариев")
+    Container(message_bus, "Message Bus", "Kafka", "Асинхронная коммуникация между сервисами")
+}
+
+System_Ext(partner_device, "Устройство партнера", "Zigbee/Wi-Fi/MQTT устройство")
+System_Ext(user_browser, "Веб-браузер", "Chrome/Firefox/Safari")
+
+' Connections
+Rel(user, user_browser, "Использует")
+Rel(user_browser, spa, "Загружает SPA", "HTTPS")
+
+Rel(spa, api_gateway, "API вызовы", "HTTPS/REST")
+Rel(api_gateway, device_service, "Маршрутизация запросов", "HTTPS")
+Rel(api_gateway, scenario_service, "Маршрутизация запросов", "HTTPS")
+
+Rel(webSocket_service, api_gateway, "Событие от устройства", "HTTPS")
+Rel(api_gateway, spa, "Событие от устройства", "HTTPS")
+Rel(webSocket_service, message_bus, "Подписывается на события устройств")
+
+Rel(device_service, device_db, "Чтение/запись", "Entity Framework")
+Rel(scenario_service, scenario_db, "Чтение/запись", "Entity Framework")
+
+Rel(device_service, message_bus, "Публикует события устройств")
+Rel(scenario_service, message_bus, "Подписывается на события устройств\n\nПубликует команды устройствам по сценарию")
+
+Rel(integration_service, partner_device, "Команды управления", "Zigbee/MQTT/HTTP")
+Rel(partner_device, integration_service, "Отправка телеметрии", "Zigbee/MQTT/HTTP")
+
+Rel(integration_service, message_bus, "Обновление телеметрии", "HTTPS")
+Rel(integration_service, message_bus, "Подписан на события устройству", "HTTPS")
+
+@enduml
