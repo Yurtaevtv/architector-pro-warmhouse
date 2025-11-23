@@ -59,6 +59,8 @@ import InputText from 'primevue/inputtext'
 import Dropdown from 'primevue/dropdown'
 import Toast from 'primevue/toast'
 import DeviceCard from '@/components/DeviceCard.vue'
+import { deviceApi } from '@/handlers/api'
+
 
 export default {
   components: {
@@ -90,7 +92,12 @@ export default {
     )
 
     // Загрузка тестовых данных
-    const loadDevices = () => {
+    const loadDevices = async () => {
+
+      const response = await deviceApi.getDevices();
+    
+        console.log(response);
+
       devices.value = [
         {
           id: 1,

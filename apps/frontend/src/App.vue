@@ -29,6 +29,7 @@ import Button from 'primevue/button'
 import Toast from 'primevue/toast'
 import DevicesView from './views/DevicesView.vue'
 
+
 export default {
   name: 'App',
   components: {
