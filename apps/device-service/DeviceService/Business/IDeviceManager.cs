@@ -1,4 +1,5 @@
-﻿using DeviceService.Models;
+﻿using DeviceService.DAL.Entity;
+using DeviceService.Models;
 
 namespace DeviceService.Business
 {
@@ -10,13 +11,13 @@ namespace DeviceService.Business
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        Task<Device?> GetByIdAsync(int id);
+        Task<DeviceInfo?> GetByIdAsync(int id);
 
         /// <summary>
         /// get all devices
         /// </summary>
         /// <returns></returns>
-        Task<Device[]> GetAllAsync();
+        Task<DeviceCollection> GetAllAsync();
 
         /// <summary>
         /// Add new device to the system. Publish message

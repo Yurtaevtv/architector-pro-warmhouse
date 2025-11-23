@@ -1,8 +1,10 @@
-﻿namespace DeviceService.Models
+﻿using DeviceService.DAL.Entity;
+
+namespace DeviceService.Models
 {
     public class DeviceCollection
     {
-        public Device[] Devices { get; init; } = [];
+        public DeviceInfo[] Devices { get; init; } = [];
 
     }
 }

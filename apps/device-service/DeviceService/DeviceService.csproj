@@ -4,18 +4,46 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Models\Enums\NewFolder\**" />
-    <Content Remove="Models\Enums\NewFolder\**" />
-    <EmbeddedResource Remove="Models\Enums\NewFolder\**" />
-    <None Remove="Models\Enums\NewFolder\**" />
+    <Compile Remove="Components\NewFolder\**" />
+    <Compile Remove="Models\Entities\NewFolder\**" />
+    <Content Remove="Components\NewFolder\**" />
+    <Content Remove="Models\Entities\NewFolder\**" />
+    <EmbeddedResource Remove="Components\NewFolder\**" />
+    <EmbeddedResource Remove="Models\Entities\NewFolder\**" />
+    <None Remove="Components\NewFolder\**" />
+    <None Remove="Models\Entities\NewFolder\**" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="15.1.0" />
+    <PackageReference Include="librdkafka.redist" Version="2.12.1" />
     <PackageReference Include="NLog.Web.AspNetCore" Version="5.3.8" />
     <PackageReference Include="AspNetCore.HealthChecks.NpgSql" Version="9.0.0" />
+    <PackageReference Include="AspNetCore.HealthChecks.Kafka" Version="9.0.0" />
+    <PackageReference Include="Confluent.Kafka" Version="2.12.0" />
+
+    <PackageReference Include="Swashbuckle.AspNetCore.Newtonsoft" Version="9.0.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="9.0.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="9.0.0" />
+
+
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.2" />
+
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="9.0.2" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.2" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.2" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.4" />
+
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Models\Entities\" />
   </ItemGroup>
 
 </Project>

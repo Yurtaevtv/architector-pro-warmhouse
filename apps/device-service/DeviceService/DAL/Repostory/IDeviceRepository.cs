@@ -1,4 +1,5 @@
-﻿using DeviceService.Models;
+﻿using DeviceService.DAL.Entity;
+using DeviceService.Models;
 
 namespace DeviceService.DAL.Repostory
 {
@@ -22,6 +23,6 @@ namespace DeviceService.DAL.Repostory
         /// </summary>
         /// <param name="deviceInfo"></param>
         /// <returns></returns>
-        Task AddDevice(DeviceMetadata deviceInfo);
+        Task<Device> AddDevice(DeviceMetadata deviceInfo);
     }
 }

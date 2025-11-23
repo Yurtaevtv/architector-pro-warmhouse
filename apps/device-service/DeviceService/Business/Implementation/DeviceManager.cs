@@ -1,4 +1,6 @@
-﻿using DeviceService.Components.MessageBroker;
+﻿using AutoMapper;
+using DeviceService.Components.MessageBroker;
+using DeviceService.DAL.Entity;
 using DeviceService.DAL.Repostory;
 using DeviceService.Models;
 
@@ -6,36 +8,39 @@ namespace DeviceService.Business.Implementation
 {
     internal sealed class DeviceManager(
                             IDeviceRepository deviceRepository,
-                            IDeviceEventPublisher eventPublisher) : IDeviceManager
+                            IDeviceEventPublisher eventPublisher,
+                            IMapper mapper
+                            ) : IDeviceManager
     {
-        public Task<Device?> GetByIdAsync(int id)
+        public async Task<DeviceInfo?> GetByIdAsync(int id)
         {
-            return deviceRepository.GetByIdAsync(id);
+            Device? device = await deviceRepository.GetByIdAsync(id);
+            if (device is null)
+            {
+                return null;
+            }
+
+            return mapper.Map<Device, DeviceInfo>(device);
         }
 
-        public Task<Device[]> GetAllAsync()
+        public async Task<DeviceCollection> GetAllAsync()
         {
-            return deviceRepository.GetAllAsync();
+            Device[] devices = await deviceRepository.GetAllAsync();
+
+            return new DeviceCollection()
+            {
+                Devices = devices.Select(d => mapper.Map<Device, DeviceInfo>(d)).ToArray()
+            };
         }
 
-        public Task AddDevice(DeviceMetadata deviceInfo)
+        public async Task AddDevice(DeviceMetadata deviceInfo)
         {
-            return deviceRepository.AddDevice(deviceInfo)
-                .ContinueWith(async r =>
-                {
-                    if (r.IsCompletedSuccessfully)
-                    {
-                        await eventPublisher.PublishAsync(new
-                        {
-                            eventType = "add new device",
-                            context = new
-                            {
-                                name = deviceInfo.Name,
-                                type = deviceInfo.Type.ToString("G")
-                            }
-                        });
-                    }
-                });
+            Device device = await deviceRepository.AddDevice(deviceInfo);
+            await eventPublisher.PublishDeviceEventAsync(new()
+            {
+                DeviceId = device.Id,
+                Event = "new"
+            });
         }
     }
 }

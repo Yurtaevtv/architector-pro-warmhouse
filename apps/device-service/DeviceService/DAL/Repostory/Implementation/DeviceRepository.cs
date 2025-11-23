@@ -1,28 +1,42 @@
-﻿using DeviceService.Models;
+﻿using DeviceService.DAL.Context;
+using DeviceService.DAL.Entity;
+using DeviceService.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace DeviceService.DAL.Repostory.Implementation
 {
-    internal class DeviceRepository : IDeviceRepository
+    internal class DeviceRepository(IDbContextFactory<DeviceContext> deviceContextFactory) : IDeviceRepository
     {
 
-        private Dictionary<int, Device> _devices = [];
-
-        public Task<Device?> GetByIdAsync(int id)
+        public async Task<Device?> GetByIdAsync(int id)
         {
-            return Task.FromResult(_devices.GetValueOrDefault(id));
+            await using DeviceContext context = await deviceContextFactory.CreateDbContextAsync();
+
+            return await context.Devices.Where(d => d.Id == id).FirstOrDefaultAsync();
         }
 
-        public Task<Device[]> GetAllAsync()
+        public async Task<Device[]> GetAllAsync()
         {
-            return Task.FromResult(_devices.Values.ToArray());
+            await using DeviceContext context = await deviceContextFactory.CreateDbContextAsync();
+            return await context.Devices.ToArrayAsync();
         }
 
-        public Task AddDevice(DeviceMetadata deviceInfo)
+        public async Task<Device> AddDevice(DeviceMetadata deviceInfo)
         {
-            return Task.Run(() =>
+            await using DeviceContext context = await deviceContextFactory.CreateDbContextAsync();
+            Device result = new()
             {
-                _devices.Add(_devices.Count, new Device(deviceInfo) { Id = _devices.Count });
-            });
+                Name = deviceInfo.Name,
+                Actions =
+                    await context.Actions.Where(a => deviceInfo.AvailableCommands.Contains(a.Name)).ToArrayAsync(),
+                AvailableMetrics = await context.Metrics.Where(m => deviceInfo.AvailableMetrics.Contains(m.Name))
+                    .ToArrayAsync(),
+                Type = await context.DeviceTypes.Where(dt => dt.Name == deviceInfo.DeviceType).FirstAsync()
+            };
+            await context.Devices.AddAsync(result);
+            await context.SaveChangesAsync();
+            return result;
         }
+
     }
 }

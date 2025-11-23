@@ -1,13 +1,46 @@
-﻿using System.Text.Json;
+﻿using Confluent.Kafka;
+using DeviceService.Components.MessageBroker.Models;
+using DeviceService.Models.Settings;
+using Microsoft.Extensions.Options;
+using System.Text.Json;
 
 namespace DeviceService.Components.MessageBroker.Implementation
 {
-    internal class DeviceEventPublisher(ILogger<DeviceEventPublisher> logger) : IDeviceEventPublisher
+    internal class DeviceEventPublisher : IDeviceEventPublisher
     {
-        public Task PublishAsync(object @event)
+        private ILogger<DeviceEventPublisher> _logger;
+        private IOptions<KafkaSettings> _kafkaSettings;
+        private IProducer<Null, string> _stringProducer;
+
+
+        public DeviceEventPublisher(
+                IOptions<KafkaSettings> kafkaSettings,
+                ILogger<DeviceEventPublisher> logger)
         {
-            logger.LogInformation("Publish event: {Event}", JsonSerializer.SerializeToDocument(@event).ToString());
-            return Task.CompletedTask;
+            _logger = logger;
+            _kafkaSettings = kafkaSettings;
+
+            var producerConfig = new ProducerConfig
+            {
+                BootstrapServers = kafkaSettings.Value.BootstrapServers,
+            };
+
+            _stringProducer = new ProducerBuilder<Null, string>(producerConfig).Build();
+        }
+
+        public async Task PublishDeviceEventAsync(DeviceEvent @event)
+        {
+            _logger.LogInformation("Publish event: {Event}", JsonSerializer.SerializeToDocument(@event).ToString());
+
+            await _stringProducer.ProduceAsync(_kafkaSettings.Value.DeviceCommandsTopic, new Message<Null, string>
+            {
+                Value = JsonSerializer.Serialize(@event)
+            });
+        }
+
+        public void Dispose()
+        {
+            _stringProducer.Dispose();
         }
     }
 }

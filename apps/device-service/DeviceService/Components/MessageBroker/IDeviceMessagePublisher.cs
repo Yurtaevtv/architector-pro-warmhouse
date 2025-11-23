@@ -1,12 +1,13 @@
-﻿namespace DeviceService.Components.MessageBroker
+﻿using DeviceService.Components.MessageBroker.Models;
+
+namespace DeviceService.Components.MessageBroker
 {
-    public interface IDeviceEventPublisher
+    public interface IDeviceEventPublisher : IDisposable
     {
         /// <summary>
         /// publish event to essage broker
         /// </summary>
-        /// <param name="event">deviec service event</param>
-        Task PublishAsync(object @event);
+        Task PublishDeviceEventAsync(DeviceEvent @event);
 
     }
 }

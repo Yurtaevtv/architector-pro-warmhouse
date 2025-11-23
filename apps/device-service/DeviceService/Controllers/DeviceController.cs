@@ -1,6 +1,5 @@
-using DeviceService.DAL.Repostory;
+﻿using DeviceService.Business;
 using DeviceService.Models;
-using DeviceService.Models.Enums;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DeviceService.Controllers
@@ -8,28 +7,33 @@ namespace DeviceService.Controllers
     [ApiController]
     [Route("/api/[controller]")]
     public class DeviceController(
-            IDeviceRepository deviceRepository) : Controller
+            IDeviceManager deviceManager) : Controller
     {
 
 
         [HttpGet("all")]
         public async Task<IActionResult> GetAll()
         {
-            return Json(new DeviceCollection { Devices = await deviceRepository.GetAllAsync() });
+            return Json(await deviceManager.GetAllAsync());
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
-            return Json(await deviceRepository.GetByIdAsync(id));
+            return Json(await deviceManager.GetByIdAsync(id));
         }
 
+        /// <summary>
+        /// УБИТЬ ТУТ
+        /// </summary>
+        /// <param name="device"></param>
+        /// <returns></returns>
         [HttpPut]
         public async Task<IActionResult> Add(DeviceMetadata device)
         {
             try
             {
-                await deviceRepository.AddDevice(device);
+                await deviceManager.AddDevice(device);
                 return NoContent();
             }
             catch (Exception e)
