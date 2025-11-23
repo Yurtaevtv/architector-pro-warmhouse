@@ -6,8 +6,7 @@
         public int Id { get; init; }
 
         public string? Name { get; init; }
-
-        public string DeviceUrl { get; init; }
+        public string? DeviceUrl { get; init; }
 
         public int TypeId { get; init; }
 

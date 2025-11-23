@@ -13,7 +13,7 @@ namespace DeviceService.DAL.Configuration
             builder.HasKey(d => d.Id);
             builder.Property(d => d.Id).HasColumnName("id");
             builder.Property(d => d.Name).IsRequired().HasColumnName("name");
-            builder.Property(d => d.DeviceUrl).IsRequired().HasColumnName("device_url");
+            builder.Property(d => d.DeviceUrl).HasColumnName("device_url");
             builder.Property(d => d.TypeId).IsRequired().HasColumnName("device_type_id");
         }
     }
