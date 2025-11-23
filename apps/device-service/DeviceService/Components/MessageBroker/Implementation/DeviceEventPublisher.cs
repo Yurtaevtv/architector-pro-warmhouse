@@ -30,11 +30,13 @@ namespace DeviceService.Components.MessageBroker.Implementation
 
         public async Task PublishDeviceEventAsync(DeviceEvent @event)
         {
-            _logger.LogInformation("Publish event: {Event}", JsonSerializer.SerializeToDocument(@event).ToString());
+            string message = JsonSerializer.Serialize(@event);
+
+            _logger.LogInformation("Publish event: {Event}", message);
 
             await _stringProducer.ProduceAsync(_kafkaSettings.Value.DeviceCommandsTopic, new Message<Null, string>
             {
-                Value = JsonSerializer.Serialize(@event)
+                Value = message
             });
         }
 
