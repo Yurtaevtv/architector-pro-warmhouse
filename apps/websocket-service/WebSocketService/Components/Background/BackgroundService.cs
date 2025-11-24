@@ -2,7 +2,7 @@
 
 namespace WebSocketService.Components.Background
 {
-    public class BackgroundService(IEnumerable<IWSConsumer> consumers) : IHostedService, IDisposable
+    public class ConsumerBackgroundService(IEnumerable<IWSConsumer> consumers) : IHostedService, IDisposable
     {
         public Task StartAsync(CancellationToken cancellationToken)
         {

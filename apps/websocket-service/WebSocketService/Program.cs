@@ -1,5 +1,6 @@
 using Confluent.Kafka;
 using NLog.Extensions.Logging;
+using WebSocketService.Components.Background;
 using WebSocketService.Components.Kafka;
 using WebSocketService.Components.Kafka.implementation;
 using WebSocketService.Components.Manager;
@@ -37,9 +38,12 @@ builder.Services.AddSingleton<IWSConsumer, DeviceEventConsumer>();
 
 builder.Services.AddControllers();
 
+builder.Services.AddHostedService<ConsumerBackgroundService>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
+
 
 app.UseHttpsRedirection();
 app.UseHealthChecks("/health");
