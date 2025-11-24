@@ -1,25 +1,32 @@
-﻿using WebSocketService.Components.Kafka;
+﻿using System.Threading;
+using WebSocketService.Components.Kafka;
 
 namespace WebSocketService.Components.Background
 {
-    public class ConsumerBackgroundService(IEnumerable<IWSConsumer> consumers) : IHostedService, IDisposable
+    public class ConsumerBackgroundService(IEnumerable<IWSConsumer> consumers) : BackgroundService
     {
-        public Task StartAsync(CancellationToken cancellationToken)
+
+        CancellationTokenSource _cancellationTokenSource;
+
+        protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            return Task.WhenAll(consumers.Select(c => c.StartConsumingAsync()));
+            _cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
+            return Task.WhenAll(consumers.Select(c => Task.Run(() => c.StartConsumingAsync(_cancellationTokenSource), stoppingToken)));
         }
 
-        public Task StopAsync(CancellationToken cancellationToken)
+        public override Task StopAsync(CancellationToken cancellationToken)
         {
-            return Task.WhenAll(consumers.Select(c => c.StopConsumersAsync()));
+            _cancellationTokenSource.Cancel();
+            return base.StopAsync(cancellationToken);
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             foreach (IWSConsumer consumer in consumers)
             {
                 consumer.Dispose();
             }
+            base.Dispose();
         }
     }
 }

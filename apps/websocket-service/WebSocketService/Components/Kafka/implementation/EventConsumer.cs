@@ -6,8 +6,6 @@ namespace WebSocketService.Components.Kafka.implementation
 {
     public abstract class EventConsumer : IWSConsumer
     {
-        private CancellationTokenSource _tokenSource;
-        private Task? _consumingTask;
         private readonly IConsumer<string, string> _consumer;
 
         protected readonly IOptions<KafkaSettings> _settings;
@@ -18,38 +16,32 @@ namespace WebSocketService.Components.Kafka.implementation
             IOptions<KafkaSettings> settings,
             ILogger<EventConsumer> logger)
         {
+            _settings = settings;
+
             var config = new ConsumerConfig
             {
                 BootstrapServers = settings.Value.BootstrapServers,
-                GroupId = settings.Value.DeviceCommandsTopic,
+                GroupId = Topic,
                 AutoOffsetReset = AutoOffsetReset.Latest,
                 EnableAutoCommit = false
             };
-            _settings = settings;
             _logger = logger;
             _consumer = new ConsumerBuilder<string, string>(config).Build();
         }
 
         protected abstract Task ProcessKafkaMessage(string message);
 
-        public async Task StartConsumingAsync()
+        public async Task StartConsumingAsync(CancellationTokenSource cts)
         {
-
-            if (_consumingTask != null)
-            {
-                _logger.LogError($"Consuming task for {_settings.Value.DeviceCommandsTopic} can`t be restarted");
-            }
-
-            _tokenSource = new CancellationTokenSource();
 
             _consumer.Subscribe(_settings.Value.DeviceCommandsTopic);
             _logger.LogInformation("Kafka WebSocket consumer started. Topics: {Topics}", _settings.Value.DeviceCommandsTopic);
 
-            while (!_tokenSource.Token.IsCancellationRequested)
+            while (!cts.Token.IsCancellationRequested)
             {
                 try
                 {
-                    var consumeResult = _consumer.Consume(_tokenSource.Token);
+                    var consumeResult = _consumer.Consume(cts.Token);
 
                     if (consumeResult?.Message?.Value != null)
                     {
@@ -72,14 +64,9 @@ namespace WebSocketService.Components.Kafka.implementation
 
         }
 
-        public Task StopConsumersAsync()
-        {
-            return _tokenSource.CancelAsync();
-        }
 
         public void Dispose()
         {
-            _tokenSource.Cancel();
             _consumer.Dispose();
         }
     }

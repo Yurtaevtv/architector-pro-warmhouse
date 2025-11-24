@@ -1,10 +1,10 @@
-﻿namespace WebSocketService.Components.Kafka
+﻿using System.Threading;
+
+namespace WebSocketService.Components.Kafka
 {
     public interface IWSConsumer : IDisposable
     {
 
-        Task StartConsumingAsync();
-
-        Task StopConsumersAsync();
+        Task StartConsumingAsync(CancellationTokenSource cts);
     }
 }
