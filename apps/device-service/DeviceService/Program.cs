@@ -40,7 +40,8 @@ builder.Services.AddHealthChecks()
     )
     .AddKafka(new ProducerConfig
     {
-        BootstrapServers = kafkaSettings!.BootstrapServers
+        BootstrapServers = kafkaSettings!.BootstrapServers,
+        SocketTimeoutMs = 10000
     });
 
 builder.Services.AddControllers();

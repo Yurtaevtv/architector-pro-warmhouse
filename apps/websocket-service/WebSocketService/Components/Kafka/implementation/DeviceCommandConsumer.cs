@@ -20,7 +20,7 @@ namespace WebSocketService.Components.Kafka.implementation
                 // Отправляем всем подключенным WebSocket клиентам
                 await connectionManager.SendToAllAsync(message);
 
-                _logger.LogDebug("Message forwarded to WebSocket clients. Topic: {Topic}, Connections: {Connections}",
+                _logger.LogInformation("Message forwarded to WebSocket clients. Topic: {Topic}, Connections: {Connections}",
                     Topic, connectionManager.GetConnectionCount());
             }
             catch (JsonException ex)

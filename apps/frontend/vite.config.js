@@ -17,7 +17,7 @@ export default defineConfig({
       proxy: {
         '/app': {
           target: 'http://api.gateway.local:81',
-          changeOrigin: true,
+          changeOrigin: false,
           secure: false,
       }     
     }

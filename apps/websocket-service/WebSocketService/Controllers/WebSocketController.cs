@@ -7,7 +7,8 @@ namespace WebSocketService.Controllers
     [ApiController]
     public class WebSocketController(
                     IWebSocketManager webSocketHandler,
-                    IConnectionManager connectionManager) : Controller
+                    IConnectionManager connectionManager,
+                    ILogger<WebSocketController> logger) : Controller
     {
 
         [HttpGet("/ws")]
@@ -15,12 +16,14 @@ namespace WebSocketService.Controllers
         {
             if (HttpContext.WebSockets.IsWebSocketRequest)
             {
+                logger.LogInformation("WebSocket connection");
                 var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
 
                 await webSocketHandler.HandleAsync(webSocket);
             }
             else
             {
+                logger.LogInformation("WebSocket was not connected");
                 HttpContext.Response.StatusCode = 400;
             }
         }

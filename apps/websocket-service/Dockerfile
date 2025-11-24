@@ -4,6 +4,10 @@ USER root
 WORKDIR /app
 EXPOSE 5000
 
+RUN apk update && \
+    apk add curl && \
+    rm -rf /var/cache/apk/*
+
 FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS build
 WORKDIR /src
 COPY ["./WebSocketService/WebSocketService.csproj", "."]

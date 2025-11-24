@@ -45,10 +45,12 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 
 
-app.UseHttpsRedirection();
 app.UseHealthChecks("/health");
 
-app.UseAuthorization();
+app.UseHttpsRedirection();
+
+
+app.UseWebSockets();
 
 app.MapControllers();
 

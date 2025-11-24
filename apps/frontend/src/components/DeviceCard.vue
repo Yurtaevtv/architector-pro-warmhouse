@@ -23,13 +23,13 @@
           <span>Состояние:</span>
           <strong>{{ device.state === 'on' ? 'ВКЛ' : 'ВЫКЛ' }}</strong>
         </div>
-        <div v-if="device.brightness" class="telemetry-item">
+        <div v-if="device.metrics.brightness" class="telemetry-item">
           <span>Яркость:</span>
-          <strong>{{ device.brightness }}%</strong>
+          <strong>{{ device.metrics.brightness }}%</strong>
         </div>
-        <div v-if="device.temperature" class="telemetry-item">
+        <div v-if="device.metrics.temperature" class="telemetry-item">
           <span>Температура:</span>
-          <strong>{{ device.temperature }}°C</strong>
+          <strong>{{ device.metrics.temperature }}°C</strong>
         </div>
       </div>
     </div>

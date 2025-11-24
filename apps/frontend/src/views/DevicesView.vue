@@ -60,6 +60,8 @@ import Dropdown from 'primevue/dropdown'
 import Toast from 'primevue/toast'
 import DeviceCard from '@/components/DeviceCard.vue'
 import { deviceApi } from '@/handlers/api'
+import websocketService from '@/handlers/websocket'
+
 
 
 export default {
@@ -83,8 +85,8 @@ export default {
 
     const deviceTypes = [
       { name: 'Лампа', value: 'light' },
-      { name: 'Термостат', value: 'thermostat' },
-      { name: 'Датчик', value: 'sensor' }
+      { name: 'Датчик', value: 'sensor' },
+      { name: 'Обогреватель', value: 'warmer' }
     ]
 
     const onlineCount = computed(() => 
@@ -96,7 +98,9 @@ export default {
 
       const response = await deviceApi.getDevices();
     
-        console.log(response);
+      console.log(response);
+      
+      devices.value = response;
 
       devices.value = [
         {
@@ -106,7 +110,10 @@ export default {
           location: 'Кухня',
           status: 'online',
           state: 'on',
-          brightness: 80
+          metrics: {
+            brightness: 80,
+            temperature: 22
+          }
         },
         {
           id: 2,
@@ -114,14 +121,9 @@ export default {
           type: 'thermostat',
           location: 'Гостиная',
           status: 'online',
-          temperature: 22
-        },
-        {
-          id: 3,
-          name: 'Датчик движения',
-          type: 'sensor',
-          location: 'Прихожая',
-          status: 'offline'
+          metrics: {
+            temperature: 22
+          }
         }
       ]
     }
@@ -158,7 +160,10 @@ export default {
       })
     }
 
-    onMounted(loadDevices)
+    onMounted(()=>{
+      loadDevices();
+      websocketService.connect();
+    })
 
     return {
       devices,
