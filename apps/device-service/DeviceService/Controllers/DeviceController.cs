@@ -5,13 +5,13 @@ using Microsoft.AspNetCore.Mvc;
 namespace DeviceService.Controllers
 {
     [ApiController]
-    [Route("/api/[controller]")]
+    [Route("/app/devices")]
     public class DeviceController(
             IDeviceManager deviceManager) : Controller
     {
 
 
-        [HttpGet("all")]
+        [HttpGet]
         public async Task<IActionResult> GetAll()
         {
             return Json(await deviceManager.GetAllAsync());

@@ -56,7 +56,10 @@ services:
     build:
       context: ${FRONTEND_CONTEXT}
       dockerfile: Dockerfile
-    container_name: smart-home-frontend
+    container_name: smart-home-frontendw
+    depends_on:
+      api-gateway:
+        condition: service_healthy
     ports:
       - "3000:80"
     networks:
@@ -185,6 +188,21 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+
+
+  smarthome_nginx:
+    image: nginx:latest
+    container_name: smarthome_web_nginx
+    depends_on:
+      - api-gateway
+    volumes:
+      - ./Docker.nginx.conf:/etc/nginx/nginx.conf
+    ports:
+      - 81:80
+    restart: always
+    networks:
+      smarthome-network:
+
 
 volumes:
   postgres_data:

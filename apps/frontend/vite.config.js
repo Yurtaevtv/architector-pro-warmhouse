@@ -9,7 +9,17 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url))
     }
   },
+  https: false,
   server: {
     port: 3000
+  },
+  devServer: {
+      proxy: {
+        '/app': {
+          target: 'http://api.gateway.local:81',
+          changeOrigin: true,
+          secure: false,
+      }     
+    }
   }
 })
