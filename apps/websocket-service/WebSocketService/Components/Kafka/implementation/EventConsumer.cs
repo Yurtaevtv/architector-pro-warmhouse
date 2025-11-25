@@ -68,6 +68,7 @@ namespace WebSocketService.Components.Kafka.implementation
         public void Dispose()
         {
             _consumer.Dispose();
+            GC.SuppressFinalize(this);
         }
     }
 }

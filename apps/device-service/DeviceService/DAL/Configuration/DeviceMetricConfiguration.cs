@@ -5,9 +5,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace DeviceService.DAL.Configuration
 {
-    public class DeviceMetricConfiguration : IEntityTypeConfiguration<DeviceMetric>
+    public class DeviceMetricConfiguration : IEntityTypeConfiguration<Metric>
     {
-        public void Configure(EntityTypeBuilder<DeviceMetric> builder)
+        public void Configure(EntityTypeBuilder<Metric> builder)
         {
             builder.ToTable("metrics");
             builder.HasKey(d => d.Id);

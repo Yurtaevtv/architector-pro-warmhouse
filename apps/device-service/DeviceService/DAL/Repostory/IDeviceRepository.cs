@@ -23,6 +23,6 @@ namespace DeviceService.DAL.Repostory
         /// </summary>
         /// <param name="deviceInfo"></param>
         /// <returns></returns>
-        Task<Device> AddDevice(DeviceMetadata deviceInfo);
+        Task<Device> AddDevice(DeviceCreateRequest deviceInfo);
     }
 }

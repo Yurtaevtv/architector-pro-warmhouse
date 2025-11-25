@@ -24,7 +24,7 @@ namespace DeviceService.Business
         /// </summary>
         /// <param name="deviceInfo"></param>
         /// <returns></returns>
-        Task AddDevice(DeviceMetadata deviceInfo);
+        Task AddDevice(DeviceCreateRequest deviceInfo);
 
     }
 }

@@ -1,6 +1,6 @@
 ﻿namespace DeviceService.Models
 {
-    public record DeviceMetadata
+    public record DeviceCreateRequest
     {
 
         public string Name { get; init; }

@@ -33,7 +33,7 @@ namespace DeviceService.Business.Implementation
             };
         }
 
-        public async Task AddDevice(DeviceMetadata deviceInfo)
+        public async Task AddDevice(DeviceCreateRequest deviceInfo)
         {
             Device device = await deviceRepository.AddDevice(deviceInfo);
             await eventPublisher.PublishDeviceEventAsync(new()

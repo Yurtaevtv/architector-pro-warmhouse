@@ -18,24 +18,43 @@ namespace DeviceService.DAL.Repostory.Implementation
         public async Task<Device[]> GetAllAsync()
         {
             await using DeviceContext context = await deviceContextFactory.CreateDbContextAsync();
-            return await context.Devices.ToArrayAsync();
+            return await context.Devices
+                                    .Include(d => d.DeviceMetrics)
+                                        .ThenInclude(dm => dm.Metric)
+                                    .Include(d => d.Type)
+                                    .Include(d => d.Actions)
+                                    .ToArrayAsync();
         }
 
-        public async Task<Device> AddDevice(DeviceMetadata deviceInfo)
+        public async Task<Device> AddDevice(DeviceCreateRequest deviceInfo)
         {
-            await using DeviceContext context = await deviceContextFactory.CreateDbContextAsync();
-            Device result = new()
+            using (DeviceContext context = await deviceContextFactory.CreateDbContextAsync())
             {
-                Name = deviceInfo.Name,
-                Actions =
-                    await context.Actions.Where(a => deviceInfo.AvailableCommands.Contains(a.Name)).ToArrayAsync(),
-                AvailableMetrics = await context.Metrics.Where(m => deviceInfo.AvailableMetrics.Contains(m.Name))
-                    .ToArrayAsync(),
-                Type = await context.DeviceTypes.Where(dt => dt.Name == deviceInfo.DeviceType).FirstAsync()
-            };
-            await context.Devices.AddAsync(result);
-            await context.SaveChangesAsync();
-            return result;
+                IQueryable<Metric> metrics = context.Metrics.Where(m => deviceInfo.AvailableMetrics.Contains(m.Name));
+
+                Device result = new()
+                {
+                    Name = deviceInfo.Name,
+                    Actions =
+                        await context.Actions.Where(a => deviceInfo.AvailableCommands.Contains(a.Name)).ToArrayAsync(),
+                    Type = await context.DeviceTypes.Where(dt => dt.Name == deviceInfo.DeviceType).FirstAsync()
+                };
+
+                await context.Devices.AddAsync(result);
+
+                await context.DeviceMetrics.AddRangeAsync(
+                    metrics.Select(m =>
+                        new DeviceMetric()
+                        {
+                            Device = result,
+                            Metric = m,
+                            Value = "-"
+                        })
+                );
+
+                await context.SaveChangesAsync();
+                return result;
+            }
         }
 
     }

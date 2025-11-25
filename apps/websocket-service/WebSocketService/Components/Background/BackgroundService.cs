@@ -26,6 +26,7 @@ namespace WebSocketService.Components.Background
             {
                 consumer.Dispose();
             }
+            GC.SuppressFinalize(this);
             base.Dispose();
         }
     }

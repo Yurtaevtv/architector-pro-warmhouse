@@ -29,7 +29,7 @@ namespace DeviceService.Controllers
         /// <param name="device"></param>
         /// <returns></returns>
         [HttpPut]
-        public async Task<IActionResult> Add(DeviceMetadata device)
+        public async Task<IActionResult> Add(DeviceCreateRequest device)
         {
             try
             {
