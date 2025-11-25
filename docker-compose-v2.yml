@@ -6,7 +6,6 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: device
     ports:
       - "7432:5432"
     volumes:
@@ -163,6 +162,58 @@ services:
 
 
 
+  postgres_db_original:
+    image: postgres:18-alpine
+    container_name: smart-home-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: smarthome
+    ports:
+      - "8432:5432"
+    volumes:
+      - ./smart_home/init.sql:/docker-entrypoint-initdb.d/init-device.sql
+    networks:
+      - smarthome-network-original
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d smarthome"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  temperature-api:
+    build:
+      context: ${SMARTHOME_ORIGINAL}
+      dockerfile: Dockerfile
+    container_name: temperature-api
+    environment:
+      - ASPNETCORE_HTTP_PORTS=8081
+    networks:
+      - smarthome-network-original
+
+
+  smart-home:
+    build:
+      context: ${SMARTHOME_ORIGINAL}
+      dockerfile: Dockerfile
+    container_name: smarthome-original
+    depends_on:
+      postgres:
+        condition: postgres_db_original
+      temperature-api:
+        condition: service_started
+    environment:
+      - DATABASE_URL=postgres://postgres:postgres@postgres:5432/smarthome
+      - TEMPERATURE_API_URL=http://temperature-api:8081
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+    networks:
+      - smarthome-network-original
+
+
+
+
 #   # Integration Service
 #   integration-service:
 #     build:
@@ -237,4 +288,6 @@ volumes:
 
 networks:
   smarthome-network:
+    driver: bridge
+  smarthome-network-original:
     driver: bridge
