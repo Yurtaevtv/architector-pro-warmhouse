@@ -1,8 +1,14 @@
 # Build stage
-FROM golang:1.22-alpine AS builder
+FROM golang:1.22-alpine AS base
 
 # Set working directory
 WORKDIR /app
+
+RUN apk update && \
+    apk add curl && \
+    rm -rf /var/cache/apk/*
+
+FROM base AS builder
 
 # Copy go.mod and go.sum files
 COPY go.mod go.sum ./

@@ -3,6 +3,7 @@ package services
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"time"
 )
@@ -37,20 +38,24 @@ func NewTemperatureService(baseURL string) *TemperatureService {
 
 // GetTemperature fetches temperature data for a specific location
 func (s *TemperatureService) GetTemperature(location string) (*TemperatureResponse, error) {
+	log.Printf("start")
 	url := fmt.Sprintf("%s/temperature?location=%s", s.BaseURL, location)
 
 	resp, err := s.HTTPClient.Get(url)
 	if err != nil {
+		log.Printf("Some error1")
 		return nil, fmt.Errorf("error fetching temperature data: %w", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
+		log.Printf("Some error2")
 		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
 	}
 
 	var temperatureResp TemperatureResponse
 	if err := json.NewDecoder(resp.Body).Decode(&temperatureResp); err != nil {
+		log.Printf("Some error3")
 		return nil, fmt.Errorf("error decoding temperature response: %w", err)
 	}
 

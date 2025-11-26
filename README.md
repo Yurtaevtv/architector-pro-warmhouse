@@ -82,103 +82,93 @@
 
 **Диаграмма компонентов (Components)**
 
-- [компоненты системы — диаграмма С4](./schemas/component/microservice.puml)
+## ApiGateway
 
- ![компоненты системы — диаграмма С4](./schemas/component/microservice.png)
+- [компоненты apigateway диаграмма С4](./schemas/component/apigateway.puml)
+
+ ![компоненты apigateway диаграмма С4](./schemas/component/apigateway.png)
+
+ ## DeviceService
+
+- [компоненты DeviceService диаграмма С4](./schemas/component/DeviceService.puml)
+
+ ![компоненты DeviceService диаграмма С4](./schemas/component/DeviceService.png)
+
+ ## WebSocket service
+
+- [компоненты WebSocket диаграмма С4](./schemas/component/websocket.puml)
+
+ ![компоненты WebSocket диаграмма С4](./schemas/component/websocket.png)
+
+ ## ScenarioService
+
+- [компоненты ScenarioService диаграмма С4](./schemas/component/ScenarioService.puml)
+
+ ![компоненты ScenarioService диаграмма С4](./schemas/component/ScenarioService.png)
+
+ ## Integration service
+
+- [компоненты Integration service диаграмма С4](./schemas/component/Integrationservice.puml)
+
+ ![компоненты Integration service диаграмма С4](./schemas/component/Integrationservice.png)
 
 **Диаграмма кода (Code)**
 
-- [код устройства — диаграмма С4](./schemas/code/device.puml)
+## Device service code
 
- ![код устройства — диаграмма С4](./schemas/code/device.png)
+- [код Device service диаграмма С4](./schemas/code/deviceservice.puml)
 
-- [код машины состония диаграмма С4](./schemas/code/machinestate.puml)
+ ![код Device service диаграмма С4](./schemas/code/deviceservice.png)
 
- ![код машины состония — диаграмма С4](./schemas/code/machinestate.png)
+## Integartion service code
+
+- [код Integartion service диаграмма С4](./schemas/code/integrationservice.puml)
+
+ ![код Integartion service диаграмма С4](./schemas/code/integrationservice.png)
+
+## Scenarion service code
+
+- [код Scenarion диаграмма С4](./schemas/code/scenarioservice.puml)
+
+ ![код Scenarion диаграмма С4](./schemas/code/scenarioservice.png)
+
+
+## WebSocket service code
+
+- [код WebSocket диаграмма С4](./schemas/code/websocket.puml)
+
+ ![код WebSocket диаграмма С4](./schemas/code/websocket.png)
+
+
+## Event system service code
+
+- [код машины состония диаграмма С4](./schemas/code/eventsystem.puml)
+
+ ![код машины состония — диаграмма С4](./schemas/code/eventsystem.png)
 
 # Задание 3. Разработка ER-диаграммы
 
-Добавьте сюда ER-диаграмму. Она должна отражать ключевые сущности системы, их атрибуты и тип связей между ними.
-
-
-
-========================================================================================================
-========================================================================================================
-========================================================================================================
-===================================== Дальше еще не сделано  ============================================
-========================================================================================================
-========================================================================================================
-========================================================================================================
-========================================================================================================
-
-
-
+ ![код машины состония — диаграмма С4](./schemas/ER/entity.png)
 
 # Задание 4. Создание и документирование API
 
 ### 1. Тип API
 
-Укажите, какой тип API вы будете использовать для взаимодействия микросервисов. Объясните своё решение.
+Для начально решения подойдет RestApi, которое позволит постепенно уйти от монолитного решения. В дальнейшем можно перейти на asyncApi, чтобы не выполнять постоянный опрос сервисов, а реагировать на изменение покателей устройств. 
+
+Плюсы:
+ - повысит отказоустойчивость и уменьшит связанность между сервисами. 
+ - повышание масштабирования системы
+
 
 ### 2. Документация API
 
-Здесь приложите ссылки на документацию API для микросервисов, которые вы спроектировали в первой части проектной работы. Для документирования используйте Swagger/OpenAPI или AsyncAPI.
+- [DeviceService AsyncApi](./doc/asyncDeviceApi.yml)
+- [DeviceService SwaggerApi](./doc/deviceServiceSwagger.json)
 
 # Задание 5. Работа с docker и docker-compose
 
-Перейдите в apps.
-
-Там находится приложение-монолит для работы с датчиками температуры. В README.md описано как запустить решение.
-
-Вам нужно:
-
-1) сделать простое приложение temperature-api на любом удобном для вас языке программирования, которое при запросе /temperature?location= будет отдавать рандомное значение температуры.
-
-Locations - название комнаты, sensorId - идентификатор названия комнаты
-
-```
-	// If no location is provided, use a default based on sensor ID
-	if location == "" {
-		switch sensorID {
-		case "1":
-			location = "Living Room"
-		case "2":
-			location = "Bedroom"
-		case "3":
-			location = "Kitchen"
-		default:
-			location = "Unknown"
-		}
-	}
-
-	// If no sensor ID is provided, generate one based on location
-	if sensorID == "" {
-		switch location {
-		case "Living Room":
-			sensorID = "1"
-		case "Bedroom":
-			sensorID = "2"
-		case "Kitchen":
-			sensorID = "3"
-		default:
-			sensorID = "0"
-		}
-	}
-```
-
-2) Приложение следует упаковать в Docker и добавить в docker-compose. Порт по умолчанию должен быть 8081
-
-3) Кроме того для smart_home приложения требуется база данных - добавьте в docker-compose файл настройки для запуска postgres с указанием скрипта инициализации ./smart_home/init.sql
-
-Для проверки можно использовать Postman коллекцию smarthome-api.postman_collection.json и вызвать:
-
-- Create Sensor
-- Get All Sensors
-
-Должно при каждом вызове отображаться разное значение температуры
-
-Ревьюер будет проверять точно так же.
-
+ [Исходники сервиса](./microservices/temperature-api/)
 
 # **Задание 6. Разработка MVP**
 
