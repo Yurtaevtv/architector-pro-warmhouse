@@ -1,0 +1,93 @@
+@startuml
+title ER-диаграмма Smart Home SaaS платформы
+
+
+entity device_types {
+  * device_type_id: UUID <<PK>>
+  --
+  name: VARCHAR(255)
+  category: VARCHAR(50) ' light, thermostat, sensor, lock, camera
+  description: TEXT
+  supported_commands: JSONB
+  supported_telemetry: JSONB
+}
+
+entity devices {
+  * device_id: UUID <<PK>>
+  --
+  * device_type_id: UUID <<FK>>
+  name: VARCHAR(100)
+  location: VARCHAR(100) ' living_room, kitchen, bedroom
+  configuration: JSONB
+  is_online: BOOLEAN
+}
+
+entity scenarios {
+  * scenario_id: UUID <<PK>>
+  --
+  * device_id: UUID <<FK>>
+  name: VARCHAR(100)
+  description: TEXT
+  is_active: BOOLEAN
+  trigger_type: VARCHAR(50) ' device, time, manual
+  trigger_config: JSONB
+}
+
+entity scenario_actions {
+  * action_id: UUID <<PK>>
+  --
+  * scenario_id: UUID <<FK>>
+  action_type: VARCHAR(50) ' device_command, notification, delay
+  target_device_id: UUID <<FK>>
+  command: VARCHAR(100)
+  parameters: JSONB
+  execution_order: INTEGER
+  delay_seconds: INTEGER
+}
+
+entity triggers {
+  * trigger_id: UUID <<PK>>
+  --
+  * scenario_id: UUID <<FK>>
+  trigger_type: VARCHAR(50) ' device_state, time, sensor
+  source_device_id: UUID <<FK>>
+  condition_type: VARCHAR(50) ' equals, greater_than, less_than
+  condition_value: VARCHAR(255)
+  cron_expression: VARCHAR(100)
+  is_active: BOOLEAN
+}
+
+entity telemetry_data {
+  * telemetry_id: UUID <<PK>>
+  --
+  * device_id: UUID <<FK>>
+  metric_type: VARCHAR(50) ' temperature, humidity, power, state
+  metric_value: DECIMAL(12, 4)
+  string_value: VARCHAR(500)
+  json_value: JSONB
+  recorded_at: TIMESTAMP
+  processed: BOOLEAN
+}
+
+entity device_events {
+  * event_id: UUID <<PK>>
+  --
+  * device_id: UUID <<FK>>
+  event_type: VARCHAR(50) ' state_changed, connected, disconnected
+  old_value: VARCHAR(500)
+  new_value: VARCHAR(500)
+  occurred_at: TIMESTAMP
+  source: VARCHAR(50) ' device, system, user
+}
+
+device_types ||--o{ devices : "instances_of"
+
+devices ||--o{ telemetry_data : "produces"
+devices ||--o{ device_events : "generates"
+devices }o--|| scenarios : "targeted_by"
+devices }o--|| triggers : "monitored_by"
+
+scenarios ||--o{ scenario_actions : "executes"
+scenarios ||--o{ triggers : "activated_by"
+
+@enduml

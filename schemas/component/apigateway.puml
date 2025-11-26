@@ -1,0 +1,31 @@
+@startuml
+title Диаграмма компонентов API Gateway
+
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
+
+Container(api_gateway, "API Gateway", ".NET 8 + YARP", "Единая точка входа")
+
+Container_Boundary(api_gateway, "API Gateway") {
+    Component(gateway_controller, "GatewayController", "ASP.NET Core", "Основной контроллер маршрутизации")
+    Component(websocket_proxy, "WebSocketProxy", "Middleware", "Проксирование WebSocket соединений")
+    
+    Component(yarp_config, "YarpConfiguration", "IConfiguration", "Конфигурация маршрутов YARP")
+}
+
+Container(spa, "Web Application", "Vue.js/React")
+Container(device_service, "Device Service", ".NET 8")
+Container(scenario_service, "Scenario Service", ".NET 8")
+Container(websocket_service, "WebSocket Service", ".NET 8")
+
+' Connections
+Rel(spa, gateway_controller, "HTTP/HTTPS запросы", "REST API")
+
+Rel(gateway_controller, device_service, "Маршрутизация /api/devices/**", "gRPC")
+Rel(gateway_controller, scenario_service, "Маршрутизация /api/scenarios/**", "gRPC")
+
+Rel(spa, websocket_proxy, "WebSocket соединения", "WebSocket")
+Rel(websocket_proxy, websocket_service, "Проксирование WebSocket", "WebSocket")
+
+Rel(yarp_config, gateway_controller, "Конфигурация маршрутов")
+
+@enduml

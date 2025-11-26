@@ -1,0 +1,75 @@
+info:
+  title: Device Service
+  version: 1.0.0
+  description: Сервис управления устройствами умного дома
+
+defaultContentType: application/json
+
+servers:
+  kafka-server:
+    url: localhost:9092
+    protocol: kafka
+    description: Kafka message broker
+
+channels:
+  device-commands:
+    description: Канал для отправки команд устройствам
+    subscribe:
+      operationId: onDeviceCommand
+      message:
+        $ref: '#/components/messages/DeviceCommand'
+
+  device-telemetry:
+    description: Канал телеметрии устройств
+    publish:
+      operationId: publishTelemetry
+      message:
+        $ref: '#/components/messages/TelemetryEvent'
+
+components:
+  messages:
+    DeviceCommand:
+      name: deviceCommand
+      title: Device Command
+      summary: Команда для управления устройством
+      payload:
+        type: object
+        properties:
+          deviceId:
+            type: integer
+            description: ID целевого устройства
+          command:
+            type: string
+            enum: [turn_on, turn_off, set_temperature]
+            description: Тип команды
+        example:
+          deviceId: 1
+          command: "turn_on"
+          timestamp: "2024-01-15T10:30:00Z"
+          source: "mobile_app"
+
+    TelemetryEvent:
+      name: telemetryEvent
+      title: Telemetry Event
+      summary: Данные телеметрии от устройств
+      payload:
+        type: object
+        properties:
+          deviceId:
+            type: integer
+          metricType:
+            type: string
+            enum: [temperature, humidity, power, brightness]
+          value:
+            type: number
+          unit:
+            type: string
+          timestamp:
+            type: string
+            format: date-time
+        example:
+          deviceId: 2
+          metricType: "temperature"
+          value: 22.5
+          unit: "celsius"
+          timestamp: "2024-01-15T10:30:00Z"

@@ -1,0 +1,56 @@
+@startuml
+title Диаграмма кода Integration Service
+
+package "Integration.Protocols" {
+  interface IDeviceHandler {
+    + string ProtocolType { get; }
+    + SendCommandAsync(string deviceId, string command, object parameters): Task
+    + StartListeningAsync(): Task
+    + StopListeningAsync(): Task
+  }
+
+  class DeviceHandler {
+    - HttpClient _httpClient
+    + string ProtocolType { get; }
+    + SendCommandAsync(string deviceId, string command, object parameters): Task
+    + StartListeningAsync(): Task
+    + StopListeningAsync(): Task
+    - BuildRequest(string deviceId, string command, object parameters): HttpRequestMessage
+  }
+}
+
+package "Integration.Core" {
+  class ProtocolDispatcher {
+    - IDeviceHandler handler
+    - ILogger<ProtocolDispatcher> _logger
+    + RegisterHandler(IDeviceHandler handler): void
+    + GetHandlerForDevice(string deviceType): IDeviceHandler
+    + SendCommandAsync(string deviceId, string deviceType, string command, object parameters): Task
+  }
+
+}
+
+package "Integration.EventHandlers" {
+  class CommandEventConsumer {
+    - ProtocolDispatcher _dispatcher
+    - CommandTranslator _translator
+    + HandleDeviceCommand(DeviceCommandEvent @event): Task
+    - GetDeviceType(string deviceId): string
+  }
+
+  class TelemetryEventPublisher {
+    - IEventBus _eventBus
+    + PublishTelemetryReceived(string deviceId, string deviceType, object telemetryData): Task
+    + PublishDeviceEvent(string deviceId, string eventType, object data): Task
+  }
+}
+
+DeviceHandler ..|> IDeviceHandler
+
+ProtocolDispatcher --> IDeviceHandler
+
+CommandEventConsumer --> ProtocolDispatcher
+TelemetryEventPublisher --> IEventBus
+IEventBus --> CommandEventConsumer
+DeviceHandler --> TelemetryEventPublisher
+@enduml
