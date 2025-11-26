@@ -12,7 +12,7 @@ namespace DeviceService.Api.Business.Implementation
     {
         public async Task<SensorResponse[]> GetAllAsync(CancellationToken httpContextRequestAborted)
         {
-            Sensor[] sensors = await client.TryGetAllSensors();
+            Sensor[] sensors = await client.TryGetAllSensors() ?? [];
 
             return sensors.Select(s => new SensorResponse()
             {

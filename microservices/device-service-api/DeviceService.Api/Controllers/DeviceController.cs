@@ -1,4 +1,5 @@
 ﻿using DeviceService.Api.Business;
+using DeviceService.Api.Models.Rest;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DeviceService.Api.Controllers
@@ -10,13 +11,16 @@ namespace DeviceService.Api.Controllers
         [HttpGet("all")]
         public async Task<IActionResult> GetSensors()
         {
-            return Json(await deviceManager.GetAllAsync(HttpContext.RequestAborted));
+            SensorResponse[] sensors = await deviceManager.GetAllAsync(HttpContext.RequestAborted);
+
+            return sensors.Any() ? Json(sensors) : NoContent();
         }
 
         [HttpGet("{deviceId}")]
         public async Task<IActionResult> GetSensor(int deviceId)
         {
-            return Json(await deviceManager.GetByIdAsync(deviceId, HttpContext.RequestAborted));
+            SensorResponse? sensor = await deviceManager.GetByIdAsync(deviceId, HttpContext.RequestAborted);
+            return sensor is not null ? Json(sensor) : NoContent();
         }
 
     }
