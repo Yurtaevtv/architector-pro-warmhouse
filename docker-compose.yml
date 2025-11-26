@@ -77,6 +77,7 @@ services:
       context: ${TEMPERATURE_API_CONTEXT}
       dockerfile: Dockerfile
     container_name: temperature-api
+    platform: linux/amd64
     environment:
       - ASPNETCORE_HTTP_PORTS=8081
     networks:
@@ -87,15 +88,18 @@ services:
       context: ${TELEMETRY_CONTEXT}
       dockerfile: Dockerfile
     container_name: telemetry-api
+    platform: linux/amd64
     depends_on:
       smart-home:
         condition: service_started
       temperature-api:
         condition: service_started
     ports:
-      - "8082:8082"
+      - "8082:8080"
     environment:
       - ASPNETCORE_HTTP_PORTS=8082
+      - Kafka__BootstrapServers=${KAFKA_SERVER}
+      - Application__SmartHomeUrl=http://smart-home:8080
     networks:
       - smarthome-network-original
       
@@ -104,15 +108,18 @@ services:
       context: ${DEVICE_CONTEXT}
       dockerfile: Dockerfile
     container_name: device-service-api
+    platform: linux/amd64
     depends_on:
       smart-home:
-        condition: service_healthy
+        condition: service_started
       temperature-api:
         condition: service_started
     ports:
-      - "8083:8083"
+      - "8083:8080"
     environment:
       - ASPNETCORE_HTTP_PORTS=8083
+      - Kafka__BootstrapServers=${KAFKA_SERVER}
+      - Application__SmartHomeUrl=http://smart-home:8080
     networks:
       - smarthome-network-original
 

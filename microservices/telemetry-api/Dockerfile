@@ -17,4 +17,5 @@ RUN dotnet publish "Telemetry.Api.sln" -c Release -o /app/publish
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+RUN ls
 ENTRYPOINT ["dotnet", "Telemetry.Api.dll"]
